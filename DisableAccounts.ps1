@@ -36,5 +36,13 @@
 
         .DISCLAIMER
         This script is provided AS-IS, with no warranty - Use at own risk.
-
     #>
+
+    start-transcript -Path "$($env:windir)\temp\DisableAccounts_log.txt"
+
+    try {}
+    catch {write-output "Executed the disable user accounts script on $((get-date).DateTime) with the error $_" >> "$($env:windir)\temp\DisableAccounts_log.txt"}
+
+    stop-transcript;
+
+    exit
