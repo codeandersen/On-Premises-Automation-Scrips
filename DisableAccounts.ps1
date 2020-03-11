@@ -37,12 +37,51 @@
         .DISCLAIMER
         This script is provided AS-IS, with no warranty - Use at own risk.
     #>
+    Param(
+        [Parameter(Mandatory=$True,
+        Position=0,
+        HelpMessage="Enter path and filename")]
+        [String]$csvfile
+        )
 
-    start-transcript -Path "$($env:windir)\temp\DisableAccounts_log.txt"
+    #Parameters declaration
+    $LogFile = "$($env:windir)\temp\DisableAccounts_log.txt"
+    $SmtpServer = "msonline-dk.mail.protection.outlook.com"
+    $MailFrom = "deaktivering@msonline.dk"
+    $MailTo = "hca@apento.com"
+    $MailSubject = "Deativation of user report"
+    
+    #Import Active Directory modules.
+    import-module ActiveDirectory
 
-    try {}
-    catch {write-output "Executed the disable user accounts script on $((get-date).DateTime) with the error $_" >> "$($env:windir)\temp\DisableAccounts_log.txt"}
+    #Starting transcript
+    start-transcript -Path $LogFile
+    
+    try {
+        #Imports the Csv file
+        $csv = Import-Csv "$csvfile" -Header UserLogonName
 
+        #Loops through every user and deactivates them
+        ForEach($item in $csv)
+        {
+        $UserLogonName = $($item.UserLogonName)
+        #Disable-ADAccount -Identity $UserLogonName
+        write-output "User: $UserLogonName has been disabled from Active Directory"        
+        }
+
+        #Email is sent with information about users that have been deactivated
+        Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "$MailSubject" -Body "The following users in the attached file has been disabled" -Attachments "$csvfile" -SmtpServer $SmtpServer -UseSsl
+
+    }
+
+    #Catch if deactivating failed. Logged to file and email sent.
+    catch {
+        write-output "Error: Executed the disable user accounts script on $((get-date).DateTime) with the error $_"
+        Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'Error running deactivation script' -Body "Error: Executed the disable user accounts script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer -UseSsl
+    }
+        
+
+    #Stopping transcript
     stop-transcript;
-
+    
     exit
