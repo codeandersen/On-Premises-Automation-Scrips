@@ -40,7 +40,7 @@
     Param(
         [Parameter(Mandatory=$True,
         Position=0,
-        HelpMessage="Enter path and filename")]
+        HelpMessage="Enter path and filename of Csv file")]
         [String]$csvfile
         )
 
