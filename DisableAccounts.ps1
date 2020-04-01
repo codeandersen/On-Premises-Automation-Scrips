@@ -50,6 +50,7 @@
     $MailFrom = "deaktivering@msonline.dk"
     $MailTo = "hca@apento.com"
     $MailSubject = "Deativation of user report"
+    $NewFileNameAfterJob = "UserDeaktiv.csv"
     
     #Import Active Directory modules.
     import-module ActiveDirectory
@@ -57,6 +58,14 @@
     #Starting transcript
     start-transcript -Path $LogFile
     
+    If(!(Test-Path $csvfile))
+        {
+            write-output "Error: CSV file doesn't exist. Executed on $((get-date).DateTime)"
+            #Stopping transcript
+            stop-transcript;
+            Exit
+        }
+
     try {
         #Imports the Csv file
         $csv = Import-Csv "$csvfile" -Header UserLogonName
@@ -71,7 +80,7 @@
 
         #Email is sent with information about users that have been deactivated
         Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "$MailSubject" -Body "The following users in the attached file has been disabled" -Attachments "$csvfile" -SmtpServer $SmtpServer -UseSsl
-
+        Rename-Item -Path $csvfile -NewName "$NewFileNameAfterJob"
     }
 
     #Catch if deactivating failed. Logged to file and email sent.
