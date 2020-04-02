@@ -68,13 +68,13 @@
 
     try {
         #Imports the Csv file
-        $csv = Import-Csv "$csvfile" -Header UserLogonName
+        $csv = Import-Csv "$csvfile" -Header UserLogonName -Delimiter ";" | Select-Object -Skip 1
 
         #Loops through every user and deactivates them
         ForEach($item in $csv)
         {
         $UserLogonName = $($item.UserLogonName)
-        #Disable-ADAccount -Identity $UserLogonName
+        Get-ADUser -Filter{UserPrincipalName -eq $UserLogonName} | Disable-ADAccount -Confirm:$false
         write-output "User: $UserLogonName has been disabled from Active Directory"        
         }
 
