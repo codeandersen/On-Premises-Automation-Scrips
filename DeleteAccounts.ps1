@@ -68,7 +68,7 @@
     
     try {
         #Imports the Csv file
-        $csv = Import-Csv "$csvfile" -Header UserLogonName -Delimiter ";"
+        $csv = Import-Csv "$csvfile" -Header UserLogonName -Delimiter ";" | Select-Object -Skip 1
 
         #Loops through every user and deactivates them
         ForEach($item in $csv)
