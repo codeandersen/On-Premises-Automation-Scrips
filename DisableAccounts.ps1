@@ -80,6 +80,7 @@
 
         #Email is sent with information about users that have been deactivated
         Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "$MailSubject" -Body "The following users in the attached file has been disabled" -Attachments "$csvfile" -SmtpServer $SmtpServer -UseSsl
+        Remove-Item -Path "$NewFileNameAfterJob" -Confirm:$false -Force
         Rename-Item -Path $csvfile -NewName "$NewFileNameAfterJob"
     }
 
