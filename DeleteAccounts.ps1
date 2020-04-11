@@ -80,6 +80,7 @@
 
         #Email is sent with information about users that have been deactivated
         Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "$MailSubject" -Body "The following users in the attached file has been deleted" -Attachments "$csvfile" -SmtpServer $SmtpServer -UseSsl
+        Remove-Item -Path "$NewFileNameAfterJob" -Confirm:$false -Force
         Rename-Item -Path $csvfile -NewName "$NewFileNameAfterJob"
 
     }
@@ -87,7 +88,7 @@
     #Catch if deactivating failed. Logged to file and email sent.
     catch {
             write-output "Error: Executed the delete user account script on $((get-date).DateTime) with the error $_"
-            Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'Errror running deletion of user account script' -Body "Error: Executed the delete user accounts script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer -UseSsl      
+            Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'Error running deletion of user account script' -Body "Error: Executed the delete user accounts script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer -UseSsl      
     }
         
 
