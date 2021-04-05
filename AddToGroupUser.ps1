@@ -114,7 +114,7 @@ Import-Module activedirectory
         $GroupToEmpty = $csvfirstline.Group
         EmptyGroup
 
-        #Loops through every user and deactivates them
+        #Loops through every user
         ForEach($account in $csv)
         {
             #Read user data from each field in each row and assign the data to a variable as below
@@ -129,7 +129,7 @@ Import-Module activedirectory
         Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "$MailSubject" -Body "Add users to group: The following users in the attached file has been added to a group" -Attachments "$csvfile" -SmtpServer $SmtpServer -UseSsl
         Remove-Item -Path "$csvfile" -Confirm:$false -Verbose
 }
-#Catch if user creation fails. Logged to file and email sent.
+#Catch if add users to group fails. Logged to file and email sent.
     catch {
             write-output "Error: Executed the add users to group script on $((get-date).DateTime) with the error $_"
             Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'Add users to group: Errror running add users to group script' -Body "Error: Executed the add users to group script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer -UseSsl      

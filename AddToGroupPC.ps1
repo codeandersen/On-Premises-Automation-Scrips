@@ -58,7 +58,7 @@
 	            }
                 Else
                 {
-                    write-output "Group $Group doesn't exist. User $Accountname hasn't been added."
+                    write-output "Group $Group doesn't exist. Computer $Accountname hasn't been added."
 	            }               
             
         }
@@ -75,7 +75,7 @@
                 Else
                 {
                     write-output "Group $GroupToEmpty doesn't exist"
-                    Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "Add user to group: Error emptying group $GroupToEmpty" -SmtpServer $SmtpServer -UseSsl     
+                    Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "Add computer to group: Error emptying group $GroupToEmpty" -SmtpServer $SmtpServer -UseSsl     
                     stop-transcript;
                     exit 
 	            }               
@@ -113,21 +113,23 @@ Import-Module activedirectory
         #Empty group before adding computers
         EmptyGroup
 
-        #Loops through every user and deactivates them
+        #Loops through every computer
         ForEach($account in $csv)
         {
-            #Read user data from each field in each row and assign the data to a variable as below
+            #Read computer data from each field in each row and assign the data to a variable as below
             $Accountname 	= $account.Account + "$"
             $Group 	        = $account."Group"
+            
+            #Add computer to the group
 		    AddToGroup                     
         }
         
-        #Email is sent with information about computers that have been created
+        #Email is sent with information about computers that have been added
         write-output "Computers has been added to group $((get-date).DateTime)"
         Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "$MailSubject" -Body "Add computers to group: The following computers in the attached file has been added to a group" -Attachments "$csvfile" -SmtpServer $SmtpServer -UseSsl
         Remove-Item -Path "$csvfile" -Confirm:$false -Verbose
 }
-#Catch if user creation fails. Logged to file and email sent.
+#Catch if add computers to group fails. Logged to file and email sent.
     catch {
             write-output "Error: Executed the add computers to group script on $((get-date).DateTime) with the error $_"
             Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'Add computers to group: Errror running add computers to group script' -Body "Error: Executed the add computers to group script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer -UseSsl      
