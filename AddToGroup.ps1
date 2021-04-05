@@ -52,24 +52,43 @@
 
                 If($GroupExists)
                 {
-                    Add-ADGroupMember -Identity $Group -Members $Accountname
+                    Add-ADGroupMember -Identity $Group -Members $Accountname 
+                    Write-host "Added user $accountname to $group"
 	            }
                 Else
                 {
-                    write-output "Group $Group doesn't exist"
-                    Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "Add user to group: Error adding user $Accountname to group $Group" -SmtpServer $SmtpServer -UseSsl      
+                    write-output "Group $Group doesn't exist. User $Accountname hasn't been added."
+	            }               
+            
+        }
+
+    Function EmptyGroup{
+       
+                $GroupExists = Get-ADGroup -Filter { Name -eq $GroupToEmpty }              
+
+                If($GroupExists)
+                {
+                    Get-ADGroupMember -Identity $GroupToEmpty | ForEach-Object {Remove-ADGroupMember $GroupToEmpty $_ -Confirm:$false}
+                    Write-host "Removed users from $GroupToEmpty"
+	            }
+                Else
+                {
+                    write-output "Group $GroupToEmpty doesn't exist"
+                    Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "Add user to group: Error emptying group $GroupToEmpty" -SmtpServer $SmtpServer -UseSsl     
+                    stop-transcript;
+                    exit 
 	            }               
             
         }
 
 #Parameters declaration
 $LogFile = "$($env:systemdrive)\logs\AddToGroup_log.txt"
-$SmtpServer = "serv09.tnm.local"
-$MailFrom = "ad@tmg.dk"
+$SmtpServer = "smtpserver.local"
+$MailFrom = "ad@apento.com"
 $MailTo = "hca@apento.com"
 $MailSubject = "Add users to AD group report"
-#$NewFileNameAfterJob = "\\serv06\scripts\AD\Users\UserOpret.old"
-#$OUTopLevelPath = "OU=Afdelinger,OU=Domain Users,DC=tnm,DC=local"
+#$csvfile = "\\serv06\scripts\AD\GPO\Firewall_Full.csv"
+
 
 # Import active directory module for running AD cmdlets
 Import-Module activedirectory
@@ -88,7 +107,12 @@ Import-Module activedirectory
     Try {    
         #Imports the Csv file
         $csv = Import-Csv "$csvfile" -Header 'Account','Group' -Delimiter ";" | Select-Object -Skip 1
-        #$csv = Import-csv "\\serv06\scripts\AD\Users\UserOpret.csv" -Header 'Account','Group' -Delimiter ";" | Select-Object -Skip 1
+        #$csv = Import-csv "\\serv06\scripts\AD\GPO\Firewall_Full.csv" -Header 'Account','Group' -Delimiter ";" | Select-Object -Skip 1
+
+        #Empty group before adding users
+        $csvfirstline = Import-csv "$csvfile" -Header 'Account','Group' -Delimiter ";" | Select-Object -Skip 1 -First 1
+        $GroupToEmpty = $csvfirstline.Group
+        EmptyGroup
 
         #Loops through every user and deactivates them
         ForEach($account in $csv)
@@ -104,13 +128,12 @@ Import-Module activedirectory
         #Email is sent with information about users that have been created
         write-output "Users has been added to group $((get-date).DateTime)"
         Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "$MailSubject" -Body "Add users to group: The following users in the attached file has been added to a group" -Attachments "$csvfile" -SmtpServer $SmtpServer -UseSsl
-        #Remove-Item -Path "$NewFileNameAfterJob" -Confirm:$false -Verbose
-        #endregionRename-Item -Path $csvfile -NewName "$NewFileNameAfterJob"
+        Remove-Item -Path "$csvfile" -Confirm:$false -Verbose
 }
 #Catch if user creation fails. Logged to file and email sent.
     catch {
             write-output "Error: Executed the add users to group script on $((get-date).DateTime) with the error $_"
-            Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'Add users to group: Errror running add users to group script' -Body "Error: Executed the creation user accounts script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer -UseSsl      
+            Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'Add users to group: Errror running add users to group script' -Body "Error: Executed the add users to group script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer -UseSsl      
           }           
 
 
