@@ -84,7 +84,7 @@
 #Parameters declaration
 $csvfirstline = Import-csv "$csvfile" -Header 'Account','Group' -Delimiter ";" | Select-Object -Skip 1 -First 1
 $GroupToEmpty = $csvfirstline.Group
-$LogFile = "$($env:systemdrive)\logs\AddToGroup_log_$GroupToEmpty.txt"
+$LogFile = "$($env:systemdrive)\logs\AddToGroupUser_log_$GroupToEmpty.txt"
 $SmtpServer = "serv09.tnm.local"
 $MailFrom = "ad@tmg.dk"
 $MailTo = "brku@tmg.dk"
