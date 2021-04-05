@@ -54,7 +54,7 @@
                 If($GroupExists)
                 {
                     Add-ADGroupMember -Identity $Group -Members $Accountname
-                    Write-host "Added user $accountname to $group"
+                    Write-host "Added computer $accountname to $group"
 	            }
                 Else
                 {

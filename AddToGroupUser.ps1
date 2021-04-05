@@ -25,7 +25,7 @@
                Accept wildcard characters?
 
         .EXAMPLE
-        C:\PS> AddToGroup.ps1 -Csvfile "C:\temp\UserAccounts.csv"
+        C:\PS> AddToGroupUser.ps1 -Csvfile "C:\temp\UserAccounts.csv"
 
         .COPYRIGHT
         MIT License, feel free to distribute and use as you like, please leave author information.
@@ -124,7 +124,7 @@ Import-Module activedirectory
 	                     
         }
         
-        #Email is sent with information about users that have been created
+        #Email is sent with information about users that have been added
         write-output "Users has been added to group $((get-date).DateTime)"
         Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "$MailSubject" -Body "Add users to group: The following users in the attached file has been added to a group" -Attachments "$csvfile" -SmtpServer $SmtpServer -UseSsl
         Remove-Item -Path "$csvfile" -Confirm:$false -Verbose
