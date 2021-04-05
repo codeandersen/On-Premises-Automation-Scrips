@@ -25,7 +25,7 @@
                Accept wildcard characters?
 
         .EXAMPLE
-        C:\PS> AddToGroup.ps1 -Csvfile "C:\temp\UserAccounts.csv"
+        C:\PS> AddToGroupUser.ps1 -Csvfile "C:\temp\UserAccounts.csv"
 
         .COPYRIGHT
         MIT License, feel free to distribute and use as you like, please leave author information.
