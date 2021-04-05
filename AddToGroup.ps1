@@ -82,10 +82,12 @@
         }
 
 #Parameters declaration
-$LogFile = "$($env:systemdrive)\logs\AddToGroup_log.txt"
-$SmtpServer = "smtpserver.local"
-$MailFrom = "ad@apento.com"
-$MailTo = "hca@apento.com"
+$csvfirstline = Import-csv "$csvfile" -Header 'Account','Group' -Delimiter ";" | Select-Object -Skip 1 -First 1
+$GroupToEmpty = $csvfirstline.Group
+$LogFile = "$($env:systemdrive)\logs\AddToGroup_log_$GroupToEmpty.txt"
+$SmtpServer = "serv09.tnm.local"
+$MailFrom = "ad@tmg.dk"
+$MailTo = "brku@tmg.dk"
 $MailSubject = "Add users to AD group report"
 #$csvfile = "\\serv06\scripts\AD\GPO\Firewall_Full.csv"
 
