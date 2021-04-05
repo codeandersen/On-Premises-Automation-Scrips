@@ -1,9 +1,9 @@
 <#
         .SYNOPSIS
-        Add user accounts from a CSV file to an Active Directory group
+        Add computer accounts from a CSV file to an Active Directory group
 
         .DESCRIPTION
-        Script is used for automating the addition of users to groups in Active Directory.
+        Script is used for automating the addition of computers to groups in Active Directory.
 
         .PARAMETER Name
         -CSVFile
@@ -25,7 +25,7 @@
                Accept wildcard characters?
 
         .EXAMPLE
-        C:\PS> AddToGroup.ps1 -Csvfile "C:\temp\UserAccounts.csv"
+        C:\PS> AddToGroupPC.ps1 -Csvfile "C:\temp\ComputerAccounts.csv"
 
         .COPYRIGHT
         MIT License, feel free to distribute and use as you like, please leave author information.
@@ -38,6 +38,7 @@
         This script is provided AS-IS, with no warranty - Use at own risk.
     #>
 
+    
     Param(
         [Parameter(Mandatory=$True,
         Position=0,
@@ -45,7 +46,7 @@
         )]
         [String]$csvfile
         )
-
+    
     Function AddToGroup{
        
                 $GroupExists = Get-ADGroup -Filter { Name -eq $Group }              
@@ -69,7 +70,7 @@
                 If($GroupExists)
                 {
                     Get-ADGroupMember -Identity $GroupToEmpty | ForEach-Object {Remove-ADGroupMember $GroupToEmpty $_ -Confirm:$false}
-                    Write-host "Removed users from $GroupToEmpty"
+                    Write-host "Removed computers from $GroupToEmpty"
 	            }
                 Else
                 {
@@ -84,11 +85,11 @@
 #Parameters declaration
 $csvfirstline = Import-csv "$csvfile" -Header 'Account','Group' -Delimiter ";" | Select-Object -Skip 1 -First 1
 $GroupToEmpty = $csvfirstline.Group
-$LogFile = "\\serv\scripts\AD\GPO\Logs\AddToGroupUser_log_$GroupToEmpty.txt"
-$SmtpServer = "serv.local"
+$LogFile = "\\serv\scripts\AD\GPO\Logs\AddToGroupPC_log_$GroupToEmpty.txt"
+$SmtpServer = "smtpserver.local"
 $MailFrom = "ad@xyz.dk"
-$MailTo = "hca@xyz.com"
-$MailSubject = "Add users to AD group report"
+$MailTo = "hca@zyz.com"
+$MailSubject = "Add computers to AD group report"
 
 
 # Import active directory module for running AD cmdlets
@@ -109,30 +110,27 @@ Import-Module activedirectory
         #Imports the Csv file
         $csv = Import-Csv "$csvfile" -Header 'Account','Group' -Delimiter ";" | Select-Object -Skip 1
 
-        #Empty group before adding users
-        $csvfirstline = Import-csv "$csvfile" -Header 'Account','Group' -Delimiter ";" | Select-Object -Skip 1 -First 1
-        $GroupToEmpty = $csvfirstline.Group
+        #Empty group before adding computers
         EmptyGroup
 
         #Loops through every user and deactivates them
         ForEach($account in $csv)
         {
             #Read user data from each field in each row and assign the data to a variable as below
-            $Accountname 	= $account."Account"
-            $Group 	        = $account."Group"                         
-		    AddToGroup
-	                     
+            $Accountname 	= $account.Account + "$"
+            $Group 	        = $account."Group"
+		    AddToGroup                     
         }
         
-        #Email is sent with information about users that have been created
-        write-output "Users has been added to group $((get-date).DateTime)"
-        Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "$MailSubject" -Body "Add users to group: The following users in the attached file has been added to a group" -Attachments "$csvfile" -SmtpServer $SmtpServer -UseSsl
+        #Email is sent with information about computers that have been created
+        write-output "Computers has been added to group $((get-date).DateTime)"
+        Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "$MailSubject" -Body "Add computers to group: The following computers in the attached file has been added to a group" -Attachments "$csvfile" -SmtpServer $SmtpServer -UseSsl
         Remove-Item -Path "$csvfile" -Confirm:$false -Verbose
 }
 #Catch if user creation fails. Logged to file and email sent.
     catch {
-            write-output "Error: Executed the add users to group script on $((get-date).DateTime) with the error $_"
-            Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'Add users to group: Errror running add users to group script' -Body "Error: Executed the add users to group script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer -UseSsl      
+            write-output "Error: Executed the add computers to group script on $((get-date).DateTime) with the error $_"
+            Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'Add computers to group: Errror running add computers to group script' -Body "Error: Executed the add computers to group script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer -UseSsl      
           }           
 
 
