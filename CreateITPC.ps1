@@ -90,7 +90,7 @@ $SmtpServer = "serv09.tnm.local"
 $MailFrom = "ad@tmg.dk"
 $MailTo = "brku@tmg.dk"
 $MailSubject = "Create IT PC accounts report"
-$NewFileNameAfterJob = "\\serv06\scripts\AD\Users\UserITPC.old"
+$NewFileNameAfterJob = "\\serv06\Scripts\AD\ItPc\ITPC.old"
 $OUTopLevelPath = "OU=802.1x,OU=Domain Users,DC=tnm,DC=local"
 
 
@@ -108,7 +108,7 @@ If(!(Test-Path -Path $csvfile))
     
 try {    
         #Imports the Csv file
-        $csv = Import-Csv "$csvfile" -Header 'Mac','Ousti','Navn' -Delimiter ";" | Select-Object -Skip 1
+        $csv = Import-Csv "$csvfile" -Header 'Mac','Ousti','Navn', 'Gruppe' -Delimiter ";" | Select-Object -Skip 1
         #$csv = Import-csv "\\serv06\scripts\AD\Users\UserOpret.csv" -Header 'ADOU','First name','Last name','Initialer','Display name','Telephone','Email','Street','City','Zip','User','Password','Home','Pager','Mobile','Fax','Job Title','Department','Company','Member of' -Delimiter ";" | Select-Object -Skip 1
 
         #Loops through every user and deactivates them
@@ -123,17 +123,18 @@ try {
 	        $DisplayName 	= $itpc."Navn"  
             $CN         = "CN=" + "$Displayname" + "," + $OU
             $Password 	= $itpc.Mac
+            $Groups = $itpc."Gruppe" -split ","
             
             If(!(Get-ADUser -F {SamAccountName -eq $Username}) -and (!(Get-ADUser -F * -Searchbase $OU | where name -eq $DisplayName))) 
             {         
                 CreateUser 
+                AddToGroups
                 Write-output "Created ITPC Account $Firstname"           
 	        }  
 
             If((Get-ADUser -F {SamAccountName -eq $Username}) -and (!(Get-ADUser -F * -Searchbase $OU | where name -eq $DisplayName))) 
             {         
                 Set-ADUser -Identity $Username -DisplayName "$DisplayName"
-                #Rename-ADObject -Identity $CN -NewName "$DisplayName"
                 $OLDCNDATA = Get-ADUser -Identity $Username -Properties DistinguishedName  | Select DistinguishedName 
                 $DistinguishedName = $OLDCNDATA.DistinguishedName
                 Rename-ADObject $DistinguishedName -NewName $DisplayName
@@ -147,13 +148,14 @@ try {
         #Email is sent with information about users that have been created
         write-output "IT PC script finished processing IT PC provisioning on $((get-date).DateTime)"
         #Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "$MailSubject" -Body "User creation: The following users in the attached file has been created" -Attachments "$csvfile" -SmtpServer $SmtpServer -UseSsl
-        #Remove-Item -Path "$NewFileNameAfterJob" -Confirm:$false -Verbose
-        #Rename-Item -Path $csvfile -NewName "$NewFileNameAfterJob"
+        Remove-Item -Path "$NewFileNameAfterJob" -Confirm:$false -Verbose -ErrorAction Continue
+        Write-Output $csvfile 
+        Rename-Item -Path $csvfile -NewName "$NewFileNameAfterJob"
 }
 #Catch if user creation fails. Logged to file and email sent.
 catch {
             write-output "Error: Executed the create IT PC accounts script on $((get-date).DateTime) with the error $_"
-            #Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'IT PC account creation: Errror running creation of IT PC account script' -Body "Error: Executed the IT PC account script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer -UseSsl      
+            Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'IT PC account creation: Errror running creation of IT PC account script' -Body "Error: Executed the IT PC account script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer -UseSsl      
     }           
 
 
