@@ -129,7 +129,7 @@ try {
             {         
                 CreateUser 
                 AddToGroups
-                Write-output "Created ITPC Account $Firstname "           
+                Write-output "Created ITPC Account $Firstname"           
 	        }  
 
             If((Get-ADUser -F {SamAccountName -eq $Username}) -and (!(Get-ADUser -F * -Searchbase $OU | where name -eq $DisplayName))) 
