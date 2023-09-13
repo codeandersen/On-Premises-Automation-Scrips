@@ -47,7 +47,7 @@
 
 
 Function CreateUser{
- Write-output "Create user 1"
+ 
     New-ADUser `
             -SamAccountName $Username `
             -UserPrincipalName "$upn" `
@@ -58,7 +58,7 @@ Function CreateUser{
             -AccountPassword (convertto-securestring $Password -AsPlainText -Force) -ChangePasswordAtLogon $False `
             -PasswordNeverExpires $True `
             -CannotChangePassword $True
-Write-output "Create user 2"
+
  }
 
 
@@ -100,7 +100,6 @@ start-transcript -Path $LogFile
 If(!(Test-Path -Path $csvfile))
         {
             write-output "Error: CSV file doesn't exist. Executed on $((get-date).DateTime)"
-            write-output "$csvfile"
             #Stopping transcript
             stop-transcript;
             Exit
@@ -108,7 +107,7 @@ If(!(Test-Path -Path $csvfile))
     
 try {    
         #Imports the Csv file
-        $csv = Import-Csv "$csvfile" -Header 'Mac','Ousti','Navn', 'Gruppe' -Delimiter ";" | Select-Object -Skip 1
+        $csv = Import-Csv "$csvfile" -Header 'Mac','Ousti','Navn', 'Group' -Delimiter ";" | Select-Object -Skip 1
         #$csv = Import-csv "\\serv06\scripts\AD\Users\UserOpret.csv" -Header 'ADOU','First name','Last name','Initialer','Display name','Telephone','Email','Street','City','Zip','User','Password','Home','Pager','Mobile','Fax','Job Title','Department','Company','Member of' -Delimiter ";" | Select-Object -Skip 1
 
         #Loops through every user and deactivates them
@@ -123,7 +122,7 @@ try {
 	        $DisplayName 	= $itpc."Navn"  
             $CN         = "CN=" + "$Displayname" + "," + $OU
             $Password 	= $itpc.Mac
-            $Groups = $itpc."Gruppe" -split ","
+            $Groups = $itpc."Group" -split ","
             
             If(!(Get-ADUser -F {SamAccountName -eq $Username}) -and (!(Get-ADUser -F * -Searchbase $OU | where name -eq $DisplayName))) 
             {         
@@ -149,13 +148,12 @@ try {
         write-output "IT PC script finished processing IT PC provisioning on $((get-date).DateTime)"
         #Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject "$MailSubject" -Body "User creation: The following users in the attached file has been created" -Attachments "$csvfile" -SmtpServer $SmtpServer -UseSsl
         Remove-Item -Path "$NewFileNameAfterJob" -Confirm:$false -Verbose -ErrorAction Continue
-        Write-Output $csvfile 
         Rename-Item -Path $csvfile -NewName "$NewFileNameAfterJob"
 }
 #Catch if user creation fails. Logged to file and email sent.
 catch {
             write-output "Error: Executed the create IT PC accounts script on $((get-date).DateTime) with the error $_"
-            Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'IT PC account creation: Errror running creation of IT PC account script' -Body "Error: Executed the IT PC account script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer -UseSsl      
+            Send-MailMessage -From "$MailFrom" -To "$MailTo" -Subject 'IT PC account creation: Errror running creation of IT PC account script' -Body "Error: Executed the IT PC account script on $((get-date).DateTime) with the error $_" -SmtpServer $SmtpServer
     }           
 
 
