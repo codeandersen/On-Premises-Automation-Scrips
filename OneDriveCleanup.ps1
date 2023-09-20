@@ -3,7 +3,7 @@
         Cleanup OneDrive folders after migration to different tenant
 
         .DESCRIPTION
-        Script is used for automating the decommisiong of user account in Active Directory when employess leaves a company .
+        Script is used for unlinking OneDrive account and cleanup OneDrive folder after tenant migration .
 
         .EXAMPLE
         C:\PS> OneDriveCleanup.ps1
@@ -22,7 +22,7 @@
 
 #Parameters declaration
 $Company = "Firma" # Change this to the company name that's in the OneDrive folder path
-$rootPath = "$env:USERPROFILE" + "\"  # Change this to the drive you want to search
+$rootPath = "$env:USERPROFILE" + "\"  
 $CurrentDateTime = Get-Date -Format "MM-dd-yyyy_HH_mm"
 $LogFile = "$env:LOCALAPPDATA\Temp\" + "$CurrentDateTime" + "_OneDriveCleanup.log"
 $RegistryPath = "HKCU:\Software\Microsoft\OneDrive\Accounts\"
@@ -31,10 +31,10 @@ $OneDriveExe = "$env:ProgramFiles\" + "Microsoft OneDrive\OneDrive.exe"
 #Initialize LogFile
 Write-Output "$CurrentDateTime Running OneDrive Cleanup script." >> $LogFile
 
-# Initialize folder search for Cubic OneDrive
+# Initialize folder search for company OneDrive
 $folders = Get-ChildItem -Path $rootPath -Directory
 
-# Initialize registry search for Cubic OneDrives
+# Initialize registry search for company OneDrives
 $Subkeys = Get-ChildItem -Path $RegistryPath
 
 
