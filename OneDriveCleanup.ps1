@@ -79,6 +79,6 @@ try {
     }
 }
 catch {
-    Write-Output "Error: There was an error running the script error is: $result.FullName" >> $LogFile
+    Write-Output "Error: There was an error running the script error is: `"$($result.FullName)`"" >> $LogFile
 }
 
