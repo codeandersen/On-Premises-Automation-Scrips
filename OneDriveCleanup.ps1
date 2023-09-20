@@ -21,7 +21,7 @@
 
 
 #Parameters declaration
-$Company = "HC Consult" # Change this to the company name that's in the OneDrive folder path
+$Company = "Firma" # Change this to the company name that's in the OneDrive folder path
 $rootPath = "$env:USERPROFILE" + "\"  # Change this to the drive you want to search
 $CurrentDateTime = Get-Date -Format "MM-dd-yyyy_HH_mm"
 $LogFile = "$env:LOCALAPPDATA\Temp\" + "$CurrentDateTime" + "_OneDriveCleanup.log"
@@ -42,7 +42,7 @@ $Subkeys = Get-ChildItem -Path $RegistryPath
 
 
 try {
-
+    
     #Unlinking OneDrive account that contains Cubic
     foreach ($Subkey in $Subkeys) {
         $DisplayName = (Get-ItemProperty -Path $Subkey.PSPath -Name "Displayname" -ErrorAction SilentlyContinue).Displayname
@@ -65,21 +65,20 @@ try {
     }
 }   
     #OneDrive folder cleanup
-    Write-Host "Searching for OneDrive folder" >> $LogFile
+    Write-Output "Searching for OneDrive folder" >> $LogFile
     $result = $folders | Where-Object {$_.Name  -like "*OneDrive*" -and $_.Name  -like "*$Company*" }
 
     if ($result.Count -gt 0) {
         Write-Output "Starting OneDrive folder cleanup process....." >> $LogFile
-        Start-Sleep -Seconds 30
         $result | ForEach-Object {
-        Write-Output "Deleting Onedrive folder ""$_""" >> $LogFile
-        Remove-Item -Recurse -Force $_ >> $LogFile
+        Write-Output "Deleting Onedrive folder..... `"$($result.FullName)`"" >> $LogFile
+        Remove-Item -Recurse -Force -Path  "$($result.FullName)" >> $LogFile
         }
     } else {
         Write-Output "No matching OneDrive folders found." >> $LogFile
     }
 }
 catch {
-    Write-Output "Error: There was an error running the script error is: $_" >> $LogFile
+    Write-Output "Error: There was an error running the script error is: $result.FullName" >> $LogFile
 }
 
