@@ -38,12 +38,9 @@ $folders = Get-ChildItem -Path $rootPath -Directory
 $Subkeys = Get-ChildItem -Path $RegistryPath
 
 
-#Write-Output "Folders found ""$result""" >> $LogFile
-
-
 try {
     
-    #Unlinking OneDrive account that contains Cubic
+    #Unlinking OneDrive account that contains company name variable
     foreach ($Subkey in $Subkeys) {
         $DisplayName = (Get-ItemProperty -Path $Subkey.PSPath -Name "Displayname" -ErrorAction SilentlyContinue).Displayname
     
