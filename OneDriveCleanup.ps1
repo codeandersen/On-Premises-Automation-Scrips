@@ -84,7 +84,7 @@ try {
         
             # Set the modified ACL back to the folder
             Set-Acl -Path "$($result.FullName)" -AclObject $acl
-            Write-Output  "All deny permissions for  '$EveryoneGroupName' have been removed from '$folderPath'." >> $LogFile
+            Write-Output  "All deny permissions for  '$EveryoneGroupName' have been removed from `"$($result.FullName)`"" >> $LogFile
         }
         else {
             Write-Output  "No deny permissions found for '$EveryoneGroupName' in `"$($result.FullName)`" ." >> $LogFile
@@ -92,7 +92,7 @@ try {
 
         #OneDrive folder deletion
         $result | ForEach-Object {
-            Write-Output "Deleting Onedrive folder..... `"$($result.FullName)`"" >> $LogFile
+            Write-Output "Deleting Onedrive folder: `"$($result.FullName)`"" >> $LogFile
             Remove-Item -Recurse -Force -Path  "$($result.FullName)" >> $LogFile
         }
     }
