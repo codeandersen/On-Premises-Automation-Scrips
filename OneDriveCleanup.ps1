@@ -27,6 +27,9 @@ $CurrentDateTime = Get-Date -Format "MM-dd-yyyy_HH_mm"
 $LogFile = "$env:LOCALAPPDATA\Temp\" + "$CurrentDateTime" + "_OneDriveCleanup.log"
 $RegistryPath = "HKCU:\Software\Microsoft\OneDrive\Accounts\"
 $OneDriveExe = "$env:ProgramFiles\" + "Microsoft OneDrive\OneDrive.exe"
+$sidToCheck = "S-1-1-0"  # SID for "Everyone" group
+$EveryoneGroup = New-Object System.Security.Principal.SecurityIdentifier($sidToCheck) 
+$EveryoneGroupName = $EveryoneGroup.Translate([System.Security.Principal.NTAccount]).Value #Conversion of SID to name
 
 #Initialize LogFile
 Write-Output "$CurrentDateTime Running OneDrive Cleanup script." >> $LogFile
@@ -59,19 +62,41 @@ try {
             Stop-Process -name "Onedrive" -Force 
             Start-Process -FilePath "$OneDriveExe"
             Write-Output "OneDrive account $Company in  $FullOneDrivePath removed" >> $LogFile
-    }
-}   
+        }
+    }   
     #OneDrive folder cleanup
     Write-Output "Searching for OneDrive folder" >> $LogFile
-    $result = $folders | Where-Object {$_.Name  -like "*OneDrive*" -and $_.Name  -like "*$Company*" }
+    $result = $folders | Where-Object { $_.Name -like "*OneDrive*" -and $_.Name -like "*$Company*" }
 
     if ($result.Count -gt 0) {
         Write-Output "Starting OneDrive folder cleanup process....." >> $LogFile
-        $result | ForEach-Object {
-        Write-Output "Deleting Onedrive folder..... `"$($result.FullName)`"" >> $LogFile
-        Remove-Item -Recurse -Force -Path  "$($result.FullName)" >> $LogFile
+        Write-Output "Check if everyone deny permission is present....." >> $LogFile
+
+        # Get the current ACL for the folder
+        $acl = Get-Acl -Path "$($result.FullName)"
+        # Check ACL for Deny entry and everyone group
+        $denyPermissions = $acl.Access | Where-Object { $_.AccessControlType -eq "Deny" -and $_.IdentityReference.Value -eq $EveryoneGroupName }
+        if ($denyPermissions.Count -gt 0) {
+            # Remove all deny permissions for the specified SID
+            foreach ($denyPermission in $denyPermissions) {
+                $acl.RemoveAccessRule($denyPermission)
+            }
+        
+            # Set the modified ACL back to the folder
+            Set-Acl -Path "$($result.FullName)" -AclObject $acl
+            Write-Output  "All deny permissions for  '$EveryoneGroupName' have been removed from '$folderPath'." >> $LogFile
         }
-    } else {
+        else {
+            Write-Output  "No deny permissions found for '$EveryoneGroupName' in `"$($result.FullName)`" ." >> $LogFile
+        }
+
+        #OneDrive folder deletion
+        $result | ForEach-Object {
+            Write-Output "Deleting Onedrive folder..... `"$($result.FullName)`"" >> $LogFile
+            Remove-Item -Recurse -Force -Path  "$($result.FullName)" >> $LogFile
+        }
+    }
+    else {
         Write-Output "No matching OneDrive folders found." >> $LogFile
     }
 }
@@ -79,3 +104,28 @@ catch {
     Write-Output "Error: There was an error running the script error is: `"$($result.FullName)`"" >> $LogFile
 }
 
+
+
+$folderPath = "C:\temp\cubic"
+
+
+
+# Get the current ACL for the folder
+$acl = Get-Acl -Path "$($result.FullName)"
+
+# Find all deny permissions for the specified SID
+$denyPermissions = $acl.Access | Where-Object { $_.AccessControlType -eq "Deny" -and $_.IdentityReference.Value -eq $EveryoneGroupName }
+
+if ($denyPermissions.Count -gt 0) {
+    # Remove all deny permissions for the specified SID
+    foreach ($denyPermission in $denyPermissions) {
+        $acl.RemoveAccessRule($denyPermission)
+    }
+
+    # Set the modified ACL back to the folder
+    Set-Acl -Path $folderPath -AclObject $acl
+    Write-Host "All deny permissions for SID '$sidToCheck' have been removed from '$folderPath'."
+}
+else {
+    Write-Host "No deny permissions found for SID '$sidToCheck' in '$folderPath'."
+}
