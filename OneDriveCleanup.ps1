@@ -103,29 +103,3 @@ try {
 catch {
     Write-Output "Error: There was an error running the script error is: `"$($result.FullName)`"" >> $LogFile
 }
-
-
-
-$folderPath = "C:\temp\cubic"
-
-
-
-# Get the current ACL for the folder
-$acl = Get-Acl -Path "$($result.FullName)"
-
-# Find all deny permissions for the specified SID
-$denyPermissions = $acl.Access | Where-Object { $_.AccessControlType -eq "Deny" -and $_.IdentityReference.Value -eq $EveryoneGroupName }
-
-if ($denyPermissions.Count -gt 0) {
-    # Remove all deny permissions for the specified SID
-    foreach ($denyPermission in $denyPermissions) {
-        $acl.RemoveAccessRule($denyPermission)
-    }
-
-    # Set the modified ACL back to the folder
-    Set-Acl -Path $folderPath -AclObject $acl
-    Write-Host "All deny permissions for SID '$sidToCheck' have been removed from '$folderPath'."
-}
-else {
-    Write-Host "No deny permissions found for SID '$sidToCheck' in '$folderPath'."
-}
