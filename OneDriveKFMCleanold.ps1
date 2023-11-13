@@ -75,9 +75,9 @@ try {
     if ($result.Count -gt 0) {
         Write-Output "Starting OneDrive folder cleanup process....." >> $LogFile
         
-        robocopy "$($result.FullName)\Dokument" "$env:userprofile\Documents" /E /DCOPY:DAT /XO /R:100 /W:3 /LOG:"$env:LOCALAPPDATA\Temp\robocopylog_doc_sw.txt"
-        robocopy "$($result.FullName)\Skrivbordet" "$env:userprofile\Desktop" /E /DCOPY:DAT /XO /R:100 /W:3 /LOG:"$env:LOCALAPPDATA\Temp\robocopylog_desk_sw.txt"
-        robocopy "$($result.FullName)\Bilder" "$env:userprofile\Pictures" /E /DCOPY:DAT /XO /R:100 /W:3 /LOG:"$env:LOCALAPPDATA\Temp\robocopylog_pic_sw.txt"
+        robocopy "$($result.FullName)\Documents" "$env:userprofile\Documents" /E /DCOPY:DAT /XO /R:100 /W:3 /LOG:"$env:LOCALAPPDATA\Temp\robocopylog_doc_sw.txt"
+        robocopy "$($result.FullName)\Desktop" "$env:userprofile\Desktop" /E /DCOPY:DAT /XO /R:100 /W:3 /LOG:"$env:LOCALAPPDATA\Temp\robocopylog_desk_sw.txt"
+        robocopy "$($result.FullName)\Pictures" "$env:userprofile\Pictures" /E /DCOPY:DAT /XO /R:100 /W:3 /LOG:"$env:LOCALAPPDATA\Temp\robocopylog_pic_sw.txt"
 
         pause
 
@@ -87,7 +87,7 @@ try {
             Remove-Item -Recurse -Force -Path  "$($result.FullName)\Documents" >> $LogFile
             Remove-Item -Recurse -Force -Path  "$($result.FullName)\Desktop" >> $LogFile
             Remove-Item -Recurse -Force -Path  "$($result.FullName)\Pictures" >> $LogFile
-        }
+        } 
     }
     else {
         Write-Output "No matching OneDrive folders found." >> $LogFile
