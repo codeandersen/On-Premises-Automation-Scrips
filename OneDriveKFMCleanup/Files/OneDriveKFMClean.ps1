@@ -22,15 +22,16 @@
 
 #Parameters declaration
 #$OneDriveExe = "$env:ProgramFiles\" + "Microsoft OneDrive\OneDrive.exe"
-$Company = "Company Name" # Change this to the company name that's in the OneDrive folder path
+$Company = "HC Consult" # Change this to the company name that's in the OneDrive folder path
 $CompanyRegName = "STARK" # Used for setting variable after successfull run
 $rootPath = "$env:USERPROFILE" + "\"  
 $CurrentDateTime = Get-Date -Format "MM-dd-yyyy_HH_mm"
 $LogFile = "$env:LOCALAPPDATA\Temp\" + "$CurrentDateTime" + "_OneDriveKFMCleanup.log"
 $RegistryPath = "HKCU:\Software\Microsoft\OneDrive\Accounts\"
-$Documents = "Dokument"
+$Documents = "Dokumenter"
 $Desktop = "Skrivbord"
-$Pictures = "Bilder"
+$Desktop1 = "Skrivbordet"
+$Pictures = "Billeder"
     
 #Initialize LogFile
 Write-Output "$CurrentDateTime Running OneDrive KFM Backup Cleanup script." >> $LogFile
@@ -58,21 +59,20 @@ try {
               
             robocopy "$($result.FullName)\$Documents" "$env:userprofile\Documents" /E /DCOPY:DAT /XO /R:100 /W:3 /LOG:"$env:LOCALAPPDATA\Temp\robocopylog_doc_sw.txt"
             robocopy "$($result.FullName)\$Desktop" "$env:userprofile\Desktop" /E /DCOPY:DAT /XO /R:100 /W:3 /LOG:"$env:LOCALAPPDATA\Temp\robocopylog_desk_sw.txt"
-            robocopy "$($result.FullName)\$Pictures" "$env:userprofile\Pictures" /E /DCOPY:DAT /XO /R:100 /W:3 /LOG:"$env:LOCALAPPDATA\Temp\robocopylog_pic_sw.txt"
+            robocopy "$($result.FullName)\$Desktop1" "$env:userprofile\Desktop" /E /DCOPY:DAT /XO /R:100 /W:3 /LOG:"$env:LOCALAPPDATA\Temp\robocopylog_desk1_sw.txt"
+            robocopy "$($result.FullName)\$Pictures" "$env:userprofiles\Pictures" /E /DCOPY:DAT /XO /R:100 /W:3 /LOG:"$env:LOCALAPPDATA\Temp\robocopylog_pic_sw.txt"
     
             #OneDrive folder cleanup
             $result | ForEach-Object {
                 Write-Output "Deleting Onedrive folder: `"$($result.FullName)`"" >> $LogFile
                 Remove-Item -Recurse -Force -Path  "$($result.FullName)\$Documents" >> $LogFile
                 Remove-Item -Recurse -Force -Path  "$($result.FullName)\$Desktop" >> $LogFile
+                Remove-Item -Recurse -Force -Path  "$($result.FullName)\$Desktop1" >> $LogFile
                 Remove-Item -Recurse -Force -Path  "$($result.FullName)\$Pictures" >> $LogFile
                 Start-sleep -Seconds 5
                 Stop-Process -Name OneDrive
                 New-Item  -Path "HKCU:\$CompanyRegName" -Force
                 New-ItemProperty -Path "HKCU:\$CompanyRegName" -Name "OneDriveCleanupDone" -Value "True" -Force
-                #Stop-Process -Name OneDrive
-                #Start-sleep -Seconds 5
-                #Start-Process $OneDriveExe
             }
         }
         else {

@@ -215,7 +215,7 @@ Try {
         New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive" -ErrorAction Continue
         New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive" -Name KFMSilentOptIn -Value $TenantID -PropertyType String -ErrorAction Continue
         New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\OneDrive" -Name KFMSilentOptInWithNotification -Value 0  -PropertyType DWord -ErrorAction Continue
-        Execute-ProcessAsUser -Path "$OneDriveExe"  -Wait
+        Execute-ProcessAsUser -Path "$OneDriveExe" -RunLevel LeastPrivilege
 
         ##*===============================================
         ##* POST-INSTALLATION
