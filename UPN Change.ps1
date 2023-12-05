@@ -1,4 +1,4 @@
-# Load Exchange 2010 Management Snap-In if not already loaded
+# Load Exchange 2010 Management Snap-In if not already loaded 
 $snapinName = "Microsoft.Exchange.Management.PowerShell.E2010"
 if (-not (Get-PSSnapin | Where-Object { $_.Name -eq $snapinName })) {
     Add-PSSnapin $snapinName -ErrorAction Stop
