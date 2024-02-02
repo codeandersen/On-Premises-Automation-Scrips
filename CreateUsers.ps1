@@ -3,7 +3,7 @@
         Creates user accounts from a CSV file
 
         .DESCRIPTION
-        Script is used for automating the creation user accounts in Active Directory.
+        Script is used for automating the creation user accounts in Active Directory. 
 
         .PARAMETER Name
         -CSVFile
