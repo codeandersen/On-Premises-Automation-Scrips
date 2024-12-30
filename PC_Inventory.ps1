@@ -22,7 +22,7 @@
 
 $PC = Get-ComputerInfo
 $User = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-$Nic = Get-NetIPConfiguration
+$Nic = Get-NetAdapter -Physical
 $DateTime = Get-Date -Format "HH:mm:ss dd.MM.yyyy"
 
 #Monitor information
@@ -35,7 +35,7 @@ foreach ($Screen in $Screens) {
 $MonitorDetailsJoined = $MonitorDetailsString -join ", "
 
 # Join multiple MAC addresses into a single string
-$MACAddresses = ($Nic.NetAdapter.MacAddress -join ", ")
+$MACAddresses = ($nic.MacAddress -join ", ")
 
 # Join multiple MAC addresses into a single string
 $MonitorResolution = ($MonitorResolution -join ", ")
@@ -52,9 +52,11 @@ $ExportObject = [PSCustomObject]@{
     Model                    = $PC.CsModel
     OSName                   = $PC.OsName
     OSVersion                = $PC.OsVersion
+    OSBuild                  = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").DisplayVersion
     MACAddress               = $MACAddresses
     IPv4DefaultGateway       = $Nic.IPv4DefaultGateway.NextHop
-    NumberOfMonitors         = $MonitorDetailsJoined
+    NumberOfMonitors         = [System.Windows.Forms.Screen]::AllScreens.Count
+    MonitorsResolution       = $MonitorDetailsJoined
     DateTime                 = $DateTime
 }
 
@@ -65,6 +67,8 @@ $Computername = $PC.CsName
 $DateTime = Get-Date -Format "yyyyMMddHHmmss"
 $OutputCSVName = "$Computername" + "_" + $DateTime + ".csv"
 $OutputfilePath = "\\AD.local\System\Info\Information\"
+#$OutputfilePath = "C:\Github\On-Premises-Automation-Scripts\"
+$OutputCSV = "$OutputfilePath" + "$OutputCSVName"
 
 # Export to CSV
-$ExportObject | Export-Csv -Path "$OutputfilePath" + "$OutputCSVName" -NoTypeInformation -Encoding UTF8 -Delimiter ";"
+$ExportObject | Export-Csv -Path "$OutputCSV" -NoTypeInformation -Encoding UTF8 -Delimiter ";" 
